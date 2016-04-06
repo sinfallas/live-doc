@@ -1,0 +1,25 @@
+To build debian-live with unionmount you will need
+
+    A linux kernel with unionmount support
+        Get a kernel from Valerie Aurora's git repo. This is a work in progress but using this kernel you should be able to boot Debian Live. You can check the repo for more up-to-date branches.
+        Configure and build the kernel. A suggested configuration file for i686 based on stock Debian configuration. Setting or unsetting some configuration options may not work yet.
+
+    make-kpkg --rootcmd fakeroot --initrd --append-to-version -um-i686 kernel-image kernel-headers
+
+    Unfortunately kernel-package and initramfs-tools package maintainers can't agree on a way to tell initramfs-tools to generate an initramfs so you will need to generate one in a hook (put in chroot_local-hooks). Also cross-building i686 on amd64 seems broken.
+
+    Mount command with unionmount support
+        here is a patch which you can apply to Squeeze util-linux and rebuild. It may break some other options, I am not sure how those defines are supposed to work. You only need the mount package.
+    Put your mount command into your initramfs
+        using a hook (put in chroot_local-hooks). With recent live-boot-initramfs-tools you should see unionmount among the included options printed during update-initramfs.
+    Tell live-initramfs to use unionmount instead of aufs
+        Use some arguments like these with lb config
+
+    -k um-i686+ \
+
+    --bootappend-live union=unionmount \
+
+    --packages "httpfs2 less open-iscsi links2" \
+
+    --linux-packages linux-image-2.6.36-rc5 \
+
